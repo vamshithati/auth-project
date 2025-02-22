@@ -1,6 +1,14 @@
-const { signupSchema, signinSchema } = require('../middlewares/validator');
+const jwt = require('jsonwebtoken');
+const {
+	signupSchema,
+	signinSchema,
+	acceptCodeSchema,
+	changePasswordSchema,
+	acceptFPCodeSchema,
+} = require('../middlewares/validator');
 const User= require('../models/usersModel')
 const {doHash, doHashValidation, hmacProcess} = require('../utils/hashing')
+const transport = require('../middlewares/sendMail');
 
 
 exports.signup=async (req,res)=> {
@@ -62,7 +70,7 @@ exports.signin= async(req, res)=> {
                 .status(401)
                 .json({success: false, message: 'Invalid credentials'})
         }
-        const token=JsonWebTokenError.sign(
+        const token=jwt.sign(
             {
                 userId: existingUser._id,
 				email: existingUser.email,
@@ -88,3 +96,10 @@ exports.signin= async(req, res)=> {
         console.log(error)
     }
 }    
+
+exports.signout = async (req, res) => {
+	res
+		.clearCookie('Authorization')
+		.status(200)
+		.json({ success: true, message: 'logged out successfully' });
+};
